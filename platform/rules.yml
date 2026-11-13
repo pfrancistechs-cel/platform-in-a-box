@@ -1,0 +1,14 @@
+# The platform's SLO, with demo-sized windows (production: 5 m / 1 h windows and a multi-window burn rate).
+#   promise: 99% of requests succeed.  Fast alert: more than 5% of requests failing for 10 seconds.
+groups:
+  - name: platform-slo
+    rules:
+      - record: plat:error_ratio
+        expr: (sum(rate(plat_requests_total{code=~"5.."}[20s])) or vector(0)) / sum(rate(plat_requests_total[20s]))
+      - alert: ErrorRatioHigh
+        expr: plat:error_ratio > 0.05
+        for: 10s
+        labels:
+          severity: page
+        annotations:
+          summary: "More than 5% of requests are failing (the SLO promises 99% success)"
